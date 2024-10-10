@@ -144,4 +144,8 @@ function moveRight(distance)
 	playerPositionObject.z -= distance * Math.cos(direction.x - Math.PI/2);
 }
 
-export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, moveForward, moveRight};
+function moveUp(distance) {
+	playerPositionObject.y += distance;
+}
+
+export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, moveForward, moveRight, moveUp};
