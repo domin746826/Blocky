@@ -1,11 +1,5 @@
 import * as THREE from 'three';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { Water } from 'three/addons/objects/Water2.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
-import * as Utils from './utils.js';
 import * as Movement from './movement.js';
 import { initGeometries } from './blocks.js';
 import { World } from './world.js';
@@ -18,9 +12,7 @@ function updateFps(fps)
 	document.getElementById("fps").innerText = "FPS: " + Math.floor(fps);
 }
 
-// export function getBiome(x,y)
-{/* <div id="xyz">XYZ: 0/0/0</div>
-<div id="biome">Biome ABCD: 0/0/0/0</div> */}
+
 function updateXyz(x, y, z) {
 	document.getElementById("xyz").innerText = "XYZ: " + Math.floor(x) + "/" + Math.floor(y) + "/" + Math.floor(z);
 }
@@ -37,10 +29,6 @@ function main()
 	initGeometries();
 	
 
-	
-	
-
-
 	scene.background = new THREE.Color(0x87CEEB);
 
 	const ambient = new THREE.AmbientLight( 0x606060 );
@@ -51,9 +39,8 @@ function main()
 
 	const waterGeometry = new THREE.PlaneGeometry(4096, 4096); // water
 	waterGeometry.rotateX(-Math.PI/2);
-	waterGeometry.translate(0, 63, 0);
+	waterGeometry.translate(0, 59, 0);
 
-	// Materiał półprzezroczysty w kolorze niebieskim
 	const waterMaterial = new THREE.MeshBasicMaterial({
 	  color: 0x4444aa,  // niebieski
 	  transparent: true,
@@ -84,35 +71,10 @@ function main()
 	}, false);
 
 
-	const axesHelper = new THREE.AxesHelper( 1 );
-scene.add( axesHelper );
 
-	const geometry = new THREE.BoxGeometry( 5, 1, 2 );
-	const material = new THREE.MeshLambertMaterial( { color: 0xbbbbbb } );
-	const playerMesh = new THREE.Mesh( geometry, material );
-	scene.add( playerMesh );
+	const world = new World("overworld", scene);
 
-	const anotherGeom = new THREE.BoxGeometry( 7, 2, 7 );
-	const anotherMesh = new THREE.Mesh( anotherGeom, material );
-	scene.add( anotherMesh );
 
-	anotherMesh.position.set(1, -1.5, 3);
-	playerMesh.position.set(6, -1.5, 0);
-
-	const texture = new THREE.TextureLoader().load( './textures/custom/grass.png' );
-	texture.colorSpace = THREE.SRGBColorSpace;
-	texture.magFilter = THREE.NearestFilter;
-	texture.minFilter = THREE.NearestFilter;
-	
-	let world = new World("overworld", scene);
-
-	// world.getGeometry();
-	console.log(world.getGeometry());
-
-	const grass = new THREE.Mesh(	world.getGeometry(), new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } ) );
-	scene.add( grass );
-
-	grass.position.set(0, 4, 2);
 
 	camera.position.set(0, 80, 0);
 
@@ -137,7 +99,55 @@ scene.add( axesHelper );
 	Movement.setPlayerPosition(camera.position);
 	Movement.setPlayerRotation(camera.rotation);
 
+
+
+	let xChunk = 0;
+	let zChunk = 0;
 	
+	const radiusRender = 2;
+
+	const radiusRenderLazy = 8;
+
+
+	setInterval(() => {
+		const neighbours = [];
+		for (let dx = -radiusRender; dx <= radiusRender; dx++) {
+			for (let dz = -radiusRender; dz <= radiusRender; dz++) {
+				if (Math.sqrt(dx * dx + dz * dz) <= radiusRender) {
+					neighbours.push({ x: xChunk + dx, z: zChunk + dz });
+				}
+			}
+		}
+		let ignoreRest = false;
+		neighbours.forEach(({ x, z }) => {
+            let neighbourChunk = world.getChunkAt(x, z);
+			if(!neighbourChunk.isRendered && !ignoreRest) { 
+				neighbourChunk.prerenderChunk();
+				ignoreRest = true;
+			}
+        });
+		//world.getChunkAt(xChunk, zChunk).prerenderNeighbours(2);
+	}, 100);
+
+	setInterval(() => {
+		const neighbours = [];
+		for (let dx = -radiusRenderLazy; dx <= radiusRenderLazy; dx++) {
+			for (let dz = -radiusRenderLazy; dz <= radiusRenderLazy; dz++) {
+				if (Math.sqrt(dx * dx + dz * dz) <= radiusRenderLazy) {
+					neighbours.push({ x: xChunk + dx, z: zChunk + dz });
+				}
+			}
+		}
+		let ignoreRest = false;
+		neighbours.forEach(({ x, z }) => {
+            let neighbourChunk = world.getChunkAt(x, z);
+			if(!neighbourChunk.isRendered && !ignoreRest) { 
+				neighbourChunk.prerenderChunk();
+				ignoreRest = true;
+			}
+        });
+		//world.getChunkAt(xChunk, zChunk).prerenderNeighbours(2);
+	}, 150);
 
 	function animate()
 	{
@@ -174,11 +184,15 @@ scene.add( axesHelper );
 
 		Movement.moveForward(velocity.z * delta * smoothMovementFactor * speed);
 		Movement.moveRight(velocity.x * delta * smoothMovementFactor * speed);
-		Movement.moveUp(velocity.y* delta * smoothMovementFactor * speed)
+		Movement.moveUp(velocity.y* delta * smoothMovementFactor * speed);
 
-
+		xChunk = Math.floor(camera.position.x/16);
+		zChunk = Math.floor(camera.position.z/16);
+		world.getChunkAt(xChunk, zChunk).loadNeighbours(9);
+		
 		updateXyz(camera.position.x, camera.position.y, camera.position.z);
 		updateBiome(getBiome(camera.position.x,camera.position.z));
+		
 		// if(onBlock === true && Movement.keys.up == 1)
 		// {
 		// 	onBlock = false;
@@ -217,7 +231,7 @@ scene.add( axesHelper );
 
 
 
-
+		
 		
 
 

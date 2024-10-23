@@ -22,7 +22,7 @@ function setCurrentDelta(del)
 function setupMouseAndKeyboard(renderer)
 {
 	document.onkeydown = function (e) {
-		console.log(e);
+		// console.log(e);
 		switch(e.code)
 		{
 			case "KeyW":

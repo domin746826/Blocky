@@ -1,4 +1,4 @@
-import { PerlinNoise2D } from './perlin.js';
+import { PerlinNoise2D, PerlinNoise3D } from './perlin.js';
 
 
 
@@ -9,7 +9,7 @@ export function initperlin(seed) {
 
     noiseGeneral = new PerlinNoise2D(       seed*1.34425434).noise;
     noiseDetail = new PerlinNoise2D(        seed*1.97884983).noise;
-    noiseCave = new PerlinNoise2D(          seed*1.68784939).noise;
+    noiseCave = new PerlinNoise3D(          seed*1.68784939).noise;
 
     noiseBiome = new PerlinNoise2D(         seed).noise;
     noiseOcean = new PerlinNoise2D(         seed*1.11232434).noise;
@@ -97,13 +97,15 @@ export function getBiome(x,y) {
 
 
 export function getCave(x, y, z) {
-    const caveNoise = noiseCave(x / 16, y / 16, z / 16);
-    const detailNoise = noiseDetail(x / 32, z / 32);
-    const threshold = -0.5;
-    const heightFactor = (y - 48) / 32; 
-    const modifiedNoise = caveNoise + detailNoise * 0.5 + heightFactor;
+    // const caveNoise = noiseCave(x / 16, y / 16, z / 16);
+    // const detailNoise = noiseDetail(x / 32, z / 32);
+    // const threshold = -0.5;
+    // const heightFactor = (y - 48) / 32; 
+    // const modifiedNoise = caveNoise + detailNoise * 0.5 + heightFactor;
 
-    return modifiedNoise < threshold;
+    // return modifiedNoise < threshold;
+    return Math.abs(noiseCave(x / 32, y / 16, z / 32)) < 0.1;
+
 }
 
 
