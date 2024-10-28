@@ -68,7 +68,7 @@ function setupMouseAndKeyboard(renderer)
 		}
 	};
 
-	renderer.domElement.addEventListener("click", async () => {
+	document.getElementById("overlay").addEventListener("click", async () => {
 		requestPointerLockWithUnadjustedMovement();
 	  });
 
@@ -131,21 +131,30 @@ function setPlayerRotation(obj)
 	playerRotation = obj;
 }
 
-
-function moveForward(distance)
+function worldVelocityForward(velocity)
 {
-	playerPositionObject.x -= distance * Math.sin(direction.x);
-	playerPositionObject.z -= distance * Math.cos(direction.x);
+	return {x: velocity * Math.sin(direction.x), z: velocity * Math.cos(direction.x)};
 }
 
-function moveRight(distance)
+function worldVelocityRight(velocity)
 {
-	playerPositionObject.x -= distance * Math.sin(direction.x - Math.PI/2);
-	playerPositionObject.z -= distance * Math.cos(direction.x - Math.PI/2);
+	return {x: velocity * Math.sin(direction.x - Math.PI/2), z: velocity * Math.cos(direction.x - Math.PI/2)};
 }
+
+// function moveForward(distance)
+// {
+// 	playerPositionObject.x -= distance * Math.sin(direction.x);
+// 	playerPositionObject.z -= distance * Math.cos(direction.x);
+// }
+
+// function moveRight(distance)
+// {
+// 	playerPositionObject.x -= distance * Math.sin(direction.x - Math.PI/2);
+// 	playerPositionObject.z -= distance * Math.cos(direction.x - Math.PI/2);
+// }
 
 function moveUp(distance) {
 	playerPositionObject.y += distance;
 }
 
-export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, moveForward, moveRight, moveUp};
+export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, worldVelocityForward, worldVelocityRight, moveUp};

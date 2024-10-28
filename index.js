@@ -4,6 +4,8 @@ import * as Movement from './movement.js';
 import { initGeometries } from './blocks.js';
 import { World } from './world.js';
 import { getBiome } from './worldgen.js';
+import { Blocks } from './blocks.js';
+
 let fpsSmooth = 60;
 let cameraDistance = 4;
 function updateFps(fps)
@@ -79,6 +81,29 @@ function main()
 	camera.position.set(0, 80, 0);
 
 
+	window.addEventListener("mousedown", (event) => {
+		raycaster.setFromCamera( new THREE.Vector3(0, 0, 1), camera );
+		const intersects = raycaster.intersectObjects( scene.children );
+		if(intersects[0] != undefined) {
+			if(event.buttons == 1) {
+				console.log(intersects[0]);
+				if(intersects[0].distance > 5)
+					return;
+				const { point, normal } = intersects[0];
+				const xyzCoord = point.clone().sub(normal.clone().multiplyScalar(0.5)).round();
+				world.destroyBlock(xyzCoord.x, xyzCoord.y, xyzCoord.z);
+			}
+			else if(event.buttons == 2)
+			{
+				console.log(intersects[0]);
+				if(intersects[0].distance > 5)
+					return;
+				const { point, normal } = intersects[0];
+				const xyzCoord = point.clone().sub(normal.clone().multiplyScalar(-0.5)).round();
+				world.placeBlock(xyzCoord.x, xyzCoord.y, xyzCoord.z, Blocks.Stone);
+			}
+		}
+	});
 
 
 	let oldFrameDate = performance.now();
@@ -106,7 +131,7 @@ function main()
 	
 	const radiusRender = 2;
 
-	const radiusRenderLazy = 8;
+	const radiusRenderLazy = 5;
 
 
 	setInterval(() => {
@@ -126,8 +151,7 @@ function main()
 				ignoreRest = true;
 			}
         });
-		//world.getChunkAt(xChunk, zChunk).prerenderNeighbours(2);
-	}, 100);
+	}, 30);
 
 	setInterval(() => {
 		const neighbours = [];
@@ -146,108 +170,129 @@ function main()
 				ignoreRest = true;
 			}
         });
-		//world.getChunkAt(xChunk, zChunk).prerenderNeighbours(2);
 	}, 150);
+	const worldVelocity = {x: 0, y: 0};
+	let avgDelta = 0.01;
 
-	function animate()
-	{
-		requestAnimationFrame( animate );
+	function animate() {
+		requestAnimationFrame(animate);
 		let current = performance.now();
-		delta = Math.max(current - oldFrameDate, 1)/1000;
+		delta = Math.max(current - oldFrameDate, 1) / 1000;
 		oldFrameDate = current;
-		if(document.hidden) {
-			delta = 0.001;
-		}
+		if (document.hidden) delta = 0.001;
 
+		avgDelta = (avgDelta * 15 + delta) / 16;
 
+		updateMovement();
+		handleCollisions();
+		updateCameraPosition();
+		updateHud();
 
-
-
-		direction.y = Movement.keys.forward;
-		direction.x = Movement.keys.right;
-		direction.z = Movement.keys.up;
-		direction.normalize();
-
-		const smoothMovementFactor = 15;
-		const speed = 24;
-
-		velocity.x -= velocity.x * smoothMovementFactor * delta;
-		velocity.z -= velocity.z * smoothMovementFactor * delta;
-		velocity.y -= velocity.y * smoothMovementFactor * delta;
-
-		velocity.z += direction.y * delta;
-		velocity.x += direction.x * delta;
-		//velocity.y -= 9.81 * 0.04 * delta;
-		velocity.y += direction.z * delta;
-
-
-
-		Movement.moveForward(velocity.z * delta * smoothMovementFactor * speed);
-		Movement.moveRight(velocity.x * delta * smoothMovementFactor * speed);
-		Movement.moveUp(velocity.y* delta * smoothMovementFactor * speed);
-
-		xChunk = Math.floor(camera.position.x/16);
-		zChunk = Math.floor(camera.position.z/16);
-		world.getChunkAt(xChunk, zChunk).loadNeighbours(9);
-		
-		updateXyz(camera.position.x, camera.position.y, camera.position.z);
-		updateBiome(getBiome(camera.position.x,camera.position.z));
-		
-		// if(onBlock === true && Movement.keys.up == 1)
-		// {
-		// 	onBlock = false;
-		// 	velocity.y = 0.08;
-		// 	camera.position.y += velocity.y;
-		// }
-
-		//playerMesh.position.y += Movement.keys.up * currentFrameLength * 0.01;
-
-		// raycaster.set(camera.position, new THREE.Vector3(0, -1, 0));
-		// const intersects = raycaster.intersectObjects( scene.children );
-
-		// let floorLvl = 0;
-		// if(intersects[0] != undefined)
-		// 	floorLvl = camera.position.y - intersects[0].distance;
-		// else
-		// 	floorLvl = -9999;
-		
-		// if(camera.position.y <= floorLvl + 1.61)
-		// {
-		// 	camera.position.y = floorLvl + 1.6;
-		// 	velocity.y = Math.max(velocity.y, 0);
-      	// 	onBlock = true;
-		// }
-		// else
-		// {	
-		// 	camera.position.y += velocity.y;
-      	// 	onBlock = false;
-		// 	if(camera.position.y < floorLvl + 1.61)
-		// 	{
-		// 		camera.position.y = floorLvl + 1.6;
-		// 		velocity.y = Math.max(velocity.y, 0);
-        // 		onBlock = true;
-		// 	}
-		// }
-
-
-
-		
-		
-
-
-		Movement.setCurrentDelta(delta*1000);
-		camera.rotation.set(Movement.direction.y, Movement.direction.x, 0, 'ZYX');
-
-		if(fpsTimer++ >= 19)
-		{
+		if (fpsTimer++ >= 19) {
 			tenFramesLengthRaw = performance.now();
-			updateFps(20000/Math.max(tenFramesLengthRaw-tenFramesLengthOld, 1));
+			updateFps(20000 / Math.max(tenFramesLengthRaw - tenFramesLengthOld, 1));
 			tenFramesLengthOld = tenFramesLengthRaw;
 			fpsTimer = 0;
 		}
 
-		renderer.render( scene, camera );  
- 	}
+		renderer.render(scene, camera);
+	}
+
+	function updateMovement() {
+		direction.set(Movement.keys.right, Movement.keys.forward, 0).normalize();
+		const smoothMovementFactor = 15;
+		const speed = Movement.keys.up == -1 ? 1 : 4.5;
+
+		velocity.x -= velocity.x * smoothMovementFactor * avgDelta;
+		velocity.z -= velocity.z * smoothMovementFactor * avgDelta;
+		velocity.y -= 9.81 * 0.27 * avgDelta;
+
+		velocity.z += direction.y * avgDelta;
+		velocity.x += direction.x * avgDelta;
+
+		worldVelocity.x = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed).x + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * speed).x;
+		worldVelocity.z = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed).z + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * speed).z;
+	}
+
+	function handleCollisions() {
+		const blocks = getSurroundingBlocks();
+		const blockBelow = blocks.blockBelowPx || blocks.blockBelowNx || blocks.blockBelowPz || blocks.blockBelowNz;
+		const blockAbove = blocks.blockOver;
+
+		if (blockBelow && velocity.y <= 0.05) {
+			velocity.y = 0;
+			camera.position.y = Math.round(camera.position.y - 1.65) + 2.05;
+			if (Movement.keys.up == 1) velocity.y = 0.65;
+		}
+		if (blockAbove && velocity.y >= 0.05) {
+			velocity.y = 0;
+			camera.position.y = Math.round(camera.position.y + 0.3) - 0.6;
+		}
+
+		handleHorizontalCollisions(blocks);
+	}
+
+	function handleHorizontalCollisions(blocks) {
+		const { blockPx, blockNx, blockPz, blockNz, blockPxMiddle, blockNxMiddle, blockPzMiddle, blockNzMiddle, blockPxHigher, blockNxHigher, blockPzHigher, blockNzHigher } = blocks;
+
+		if (blockPx || blockPxHigher || blockPxMiddle) {
+			camera.position.x = Math.max(camera.position.x, Math.round(camera.position.x + 0.8) - 0.8);
+			worldVelocity.x = Math.max(0, worldVelocity.x);
+		}
+		if (blockNx || blockNxHigher || blockNxMiddle) {
+			camera.position.x = Math.min(camera.position.x, Math.round(camera.position.x - 0.8) + 0.8);
+			worldVelocity.x = Math.min(0, worldVelocity.x);
+		}
+		if (blockPz || blockPzHigher || blockPzMiddle) {
+			camera.position.z = Math.max(camera.position.z, Math.round(camera.position.z + 0.8) - 0.8);
+			worldVelocity.z = Math.max(0, worldVelocity.z);
+		}
+		if (blockNz || blockNzHigher || blockNzMiddle) {
+			camera.position.z = Math.min(camera.position.z, Math.round(camera.position.z - 0.8) + 0.8);
+			worldVelocity.z = Math.min(0, worldVelocity.z);
+		}
+	}
+
+	// i know it's worse than just getting the block at the position, but it's easier to handle collisions this way, in future i will write better code, i promise!
+	function getSurroundingBlocks() {
+		return {
+			blockBelowPx: world.getBlockAt(Math.round(camera.position.x + 0.25), Math.round(camera.position.y - 1.65), Math.round(camera.position.z)),
+			blockBelowNx: world.getBlockAt(Math.round(camera.position.x - 0.25), Math.round(camera.position.y - 1.65), Math.round(camera.position.z)),
+			blockBelowPz: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 1.65), Math.round(camera.position.z + 0.25)),
+			blockBelowNz: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 1.65), Math.round(camera.position.z - 0.25)),
+			blockOver: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y + 0.3), Math.round(camera.position.z)),
+			blockPx: world.getBlockAt(Math.round(camera.position.x + 0.3), Math.round(camera.position.y - 1.4), Math.round(camera.position.z)),
+			blockNx: world.getBlockAt(Math.round(camera.position.x - 0.3), Math.round(camera.position.y - 1.4), Math.round(camera.position.z)),
+			blockPz: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 1.4), Math.round(camera.position.z + 0.3)),
+			blockNz: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 1.4), Math.round(camera.position.z - 0.3)),
+			blockPxMiddle: world.getBlockAt(Math.round(camera.position.x + 0.3), Math.round(camera.position.y - 0.7), Math.round(camera.position.z)),
+			blockNxMiddle: world.getBlockAt(Math.round(camera.position.x - 0.3), Math.round(camera.position.y - 0.7), Math.round(camera.position.z)),
+			blockPzMiddle: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 0.7), Math.round(camera.position.z + 0.3)),
+			blockNzMiddle: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y - 0.7), Math.round(camera.position.z - 0.3)),
+			blockPxHigher: world.getBlockAt(Math.round(camera.position.x + 0.3), Math.round(camera.position.y), Math.round(camera.position.z)),
+			blockNxHigher: world.getBlockAt(Math.round(camera.position.x - 0.3), Math.round(camera.position.y), Math.round(camera.position.z)),
+			blockPzHigher: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y), Math.round(camera.position.z + 0.3)),
+			blockNzHigher: world.getBlockAt(Math.round(camera.position.x), Math.round(camera.position.y), Math.round(camera.position.z - 0.3))
+		};
+	}
+
+	function updateCameraPosition() {
+		Movement.moveUp(velocity.y * avgDelta * 15);
+		camera.position.x -= worldVelocity.x;
+		camera.position.z -= worldVelocity.z;
+
+		xChunk = Math.floor(camera.position.x / 16);
+		zChunk = Math.floor(camera.position.z / 16);
+		world.getChunkAt(xChunk, zChunk).loadNeighbours(9);
+
+		Movement.setCurrentDelta(delta * 1000);
+		camera.rotation.set(Movement.direction.y, Movement.direction.x, 0, 'ZYX');
+	}
+
+	function updateHud() {
+		updateXyz(camera.position.x, camera.position.y, camera.position.z);
+		updateBiome(getBiome(camera.position.x, camera.position.z));
+	}
 	
 	animate();
 }

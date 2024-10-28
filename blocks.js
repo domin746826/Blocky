@@ -42,6 +42,14 @@ const geometriesFaces = {
 		ny: new THREE.PlaneGeometry( 1, 1 ),
 		pz: new THREE.PlaneGeometry( 1, 1 ),
 		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	wood: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
 	}
 }
 
@@ -53,7 +61,7 @@ export const Blocks = {
 	Bedrock: 4,
 	Sand: 5,
 	Gravel: 6,
-
+	Wood: 7,
 }
 
 const BlockTextures = {
@@ -62,14 +70,17 @@ const BlockTextures = {
 	GrassSide: { x: 1, y: 1 },
 	SandFace: { x: 4, y: 1 },
 	GravelFace: { x: 10, y: 1 },
-	StoneFace: { x: 7, y: 1 }
+	StoneFace: { x: 7, y: 1 },
+	WoodSide: { x: 10, y: 4 },
+	WoodTop: { x: 7, y: 4 }
 };
 const uvData = {
 	Grass: createUvData(BlockTextures.GrassSide, BlockTextures.GrassTop, BlockTextures.DirtFace),
 	Dirt: createUvData(BlockTextures.DirtFace),
 	Sand: createUvData(BlockTextures.SandFace),
 	Gravel: createUvData(BlockTextures.GravelFace),
-	Stone: createUvData(BlockTextures.StoneFace)
+	Stone: createUvData(BlockTextures.StoneFace),
+	Wood: createUvData(BlockTextures.WoodSide, BlockTextures.WoodTop, BlockTextures.WoodTop)
 };
 
 function createUvData(side, top = side, bottom = side) {
@@ -159,6 +170,8 @@ function initGeometries() {
 	initBlock(Blocks.Sand, geometriesFaces.sand, uvData.Sand);
 	initBlock(Blocks.Gravel, geometriesFaces.gravel, uvData.Gravel);
 	initBlock(Blocks.Stone, geometriesFaces.stone, uvData.Stone);
+	initBlock(Blocks.Wood, geometriesFaces.wood, uvData.Wood);
+
 }
 
 export {initGeometries, geometriesFaces, getFace};

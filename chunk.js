@@ -43,6 +43,46 @@ export class Chunk {
         this.chunkData[x+z*16+y*256] = id;
     }
 
+    placeBlock(x, y, z, id) {         
+        this.setLocalBlockAt(x, y, z, id);
+        this.prerenderChunk();
+
+        if (x === 0 || x === 15 || z === 0 || z === 15) {
+            const neighbours = [];
+            if (x === 0) neighbours.push({ x: this.xChunk - 1, z: this.zChunk });
+            if (x === 15) neighbours.push({ x: this.xChunk + 1, z: this.zChunk });
+            if (z === 0) neighbours.push({ x: this.xChunk, z: this.zChunk - 1 });
+            if (z === 15) neighbours.push({ x: this.xChunk, z: this.zChunk + 1 });
+
+            neighbours.forEach(({ x, z }) => {
+                const neighbourChunk = this.world.getChunkAt(x, z);
+                if (neighbourChunk) {
+                    neighbourChunk.prerenderChunk();
+                }
+            });
+        }
+    }
+
+    destroyBlock(x, y, z) { 
+        this.setLocalBlockAt(x, y, z, Blocks.Air);
+        this.prerenderChunk();
+
+        if (x === 0 || x === 15 || z === 0 || z === 15) {
+            const neighbours = [];
+            if (x === 0) neighbours.push({ x: this.xChunk - 1, z: this.zChunk });
+            if (x === 15) neighbours.push({ x: this.xChunk + 1, z: this.zChunk });
+            if (z === 0) neighbours.push({ x: this.xChunk, z: this.zChunk - 1 });
+            if (z === 15) neighbours.push({ x: this.xChunk, z: this.zChunk + 1 });
+
+            neighbours.forEach(({ x, z }) => {
+                const neighbourChunk = this.world.getChunkAt(x, z);
+                if (neighbourChunk) {
+                    neighbourChunk.prerenderChunk();
+                }
+            });
+        }
+    }
+
 
     isCovered(x, y, z, side) { 
         const blockGlobal = {
@@ -119,7 +159,8 @@ export class Chunk {
                 }
             }
         }
-        this.loadWorld();
+        if(!this.isLoaded)
+            this.loadWorld();
 
         neighbours.forEach(({ x, z }) => {
             if(!this.world.chunkExists(x, z)) {
@@ -154,6 +195,7 @@ export class Chunk {
     }
 
     prerenderChunk() {
+        this.geometries = [];
         console.log(`prerender ${this.xChunk}/${this.zChunk}`);
 
         const directions = [Sides.PY, Sides.NY, Sides.PX, Sides.NX, Sides.PZ, Sides.NZ];
@@ -176,8 +218,12 @@ export class Chunk {
 
     recalculateMesh() {
         const mergedGeometry = BufferGeometryUtils.mergeGeometries(this.geometries);
+        this.mesh.geometry.dispose();
         this.mesh.geometry = mergedGeometry;
         this.mesh.geometry.attributes.position.needsUpdate = true;
+        this.mesh.geometry.attributes.normal.needsUpdate = true;
+        this.mesh.geometry.attributes.uv.needsUpdate = true;
+
     }
 
     getMesh() {

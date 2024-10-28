@@ -62,6 +62,18 @@ export class World {
         return this.chunksMap.has(`${x}/${z}`);
     }
 
+    placeBlock(x, y, z, id) {
+        const xChunk = Math.floor(x/16);
+        const zChunk = Math.floor(z/16);
+        this.getChunkAt(xChunk, zChunk).placeBlock(x-xChunk*16, y, z-zChunk*16, id);
+    }
+
+    destroyBlock(x, y, z) {
+        const xChunk = Math.floor(x/16);
+        const zChunk = Math.floor(z/16);
+        this.getChunkAt(xChunk, zChunk).destroyBlock(x-xChunk*16, y, z-zChunk*16);
+    }
+
     // getGeometry() {
     //     let geometries = [];
     //     for(let x = -4; x <= 4; x++)
