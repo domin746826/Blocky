@@ -13,7 +13,18 @@ function updateFps(fps)
 	fpsSmooth = (fpsSmooth*3+fps)/4;
 	document.getElementById("fps").innerText = "FPS: " + Math.floor(fps);
 }
+let selectedSlot = 0; //0-8
 
+let slots = new Array(9).fill(Blocks.Air);
+slots[0] = Blocks.Stone;
+slots[1] = Blocks.Dirt;
+slots[2] = Blocks.Planks;
+slots[3] = Blocks.Gravel;
+slots[4] = Blocks.Glass;
+slots[5] = Blocks.Wood;
+slots[6] = Blocks.Planks;
+slots[7] = Blocks.StoneBricks;
+slots[8] = Blocks.Bricks;
 
 function updateXyz(x, y, z) {
 	document.getElementById("xyz").innerText = "XYZ: " + Math.floor(x) + "/" + Math.floor(y) + "/" + Math.floor(z);
@@ -81,6 +92,29 @@ function main()
 	camera.position.set(0, 80, 0);
 
 
+	function setFocusOnSlot(slotIndex) {
+		for (let i = 1; i <= 9; i++) {
+			document.getElementById("itemslot" + i)?.classList.remove("focused");
+		}
+		document.getElementById("itemslot" + (slotIndex + 1))?.classList.add("focused");
+	}
+
+	window.addEventListener('wheel', (event) => {
+		if (event.deltaY < 0) {
+			selectedSlot--;
+		} else {
+			selectedSlot++;
+		}
+		if(selectedSlot < 0)
+			selectedSlot = 0;
+		if(selectedSlot > 8)
+			selectedSlot = 8;
+		
+		setFocusOnSlot(selectedSlot);
+	});
+
+
+
 	window.addEventListener("mousedown", (event) => {
 		raycaster.setFromCamera( new THREE.Vector3(0, 0, 1), camera );
 		const intersects = raycaster.intersectObjects( scene.children );
@@ -100,7 +134,7 @@ function main()
 					return;
 				const { point, normal } = intersects[0];
 				const xyzCoord = point.clone().sub(normal.clone().multiplyScalar(-0.5)).round();
-				world.placeBlock(xyzCoord.x, xyzCoord.y, xyzCoord.z, Blocks.Stone);
+				world.placeBlock(xyzCoord.x, xyzCoord.y, xyzCoord.z, slots[selectedSlot]);
 			}
 		}
 	});

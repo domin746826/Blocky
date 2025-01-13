@@ -93,9 +93,11 @@ export class Chunk {
 
         const checkBlock = (localX, localY, localZ, globalX, globalY, globalZ) => {
             if (localX.between(0, 15) && localY.between(0, 255) && localZ.between(0, 15)) {
-                return this.getLocalBlockAt(localX, localY, localZ) != Blocks.Air;
+                const localblock = this.getLocalBlockAt(localX, localY, localZ);
+                return localblock != Blocks.Air && localblock != Blocks.Glass && localblock != Blocks.Leaves;
             } else {
-                return this.world.getBlockAt(globalX, globalY, globalZ) != Blocks.Air;
+                const globalblock = this.world.getBlockAt(globalX, globalY, globalZ);
+                return globalblock != Blocks.Air && globalblock != Blocks.Glass && globalblock != Blocks.Leaves;
             }
         };
 

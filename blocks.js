@@ -51,6 +51,71 @@ const geometriesFaces = {
 		pz: new THREE.PlaneGeometry( 1, 1 ),
 		nz: new THREE.PlaneGeometry( 1, 1 )
 	}
+	,
+	cobblestone: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	bedrock: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	planks: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	bricks: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	stoneBricks: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	leaves: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	sandstone: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	},
+	glass: {
+		px: new THREE.PlaneGeometry( 1, 1 ),
+		nx: new THREE.PlaneGeometry( 1, 1 ),
+		py: new THREE.PlaneGeometry( 1, 1 ),
+		ny: new THREE.PlaneGeometry( 1, 1 ),
+		pz: new THREE.PlaneGeometry( 1, 1 ),
+		nz: new THREE.PlaneGeometry( 1, 1 )
+	}
 }
 
 export const Blocks = {
@@ -58,10 +123,17 @@ export const Blocks = {
 	Dirt: 1,
 	Grass: 2,
 	Stone: 3,
-	Bedrock: 4,
-	Sand: 5,
-	Gravel: 6,
-	Wood: 7,
+	Cobblestone: 4,
+	Bedrock: 5,
+	Sand: 6,
+	Gravel: 7,
+	Wood: 8,
+	Planks: 9,
+	Bricks: 10,
+	StoneBricks: 11,
+	Leaves: 12,
+	Sandstone: 13,
+	Glass: 14,
 }
 
 const BlockTextures = {
@@ -72,15 +144,33 @@ const BlockTextures = {
 	GravelFace: { x: 10, y: 1 },
 	StoneFace: { x: 7, y: 1 },
 	WoodSide: { x: 10, y: 4 },
-	WoodTop: { x: 7, y: 4 }
+	WoodTop: { x: 7, y: 4 },
+	CobblestoneFace: { x: 1, y: 7 },
+	PlanksFace: { x: 4, y: 7 },
+	GlassFace: { x: 7, y: 7 },
+	LeavesFace: { x: 10, y: 7 },
+	BricksFace: { x: 1, y: 10 },
+	StoneBricksFace: { x: 4, y: 10 },
+	BedrockFace: { x: 7, y: 10 },
+	SandstoneFace: { x: 10, y: 10 }
+
 };
 const uvData = {
+	Bedrock: createUvData(BlockTextures.BedrockFace),
+	Planks: createUvData(BlockTextures.PlanksFace),
+	Bricks: createUvData(BlockTextures.BricksFace),
+	StoneBricks: createUvData(BlockTextures.StoneBricksFace),
+	Leaves: createUvData(BlockTextures.LeavesFace),
+	Sandstone: createUvData(BlockTextures.SandstoneFace),
+	Glass: createUvData(BlockTextures.GlassFace),
 	Grass: createUvData(BlockTextures.GrassSide, BlockTextures.GrassTop, BlockTextures.DirtFace),
 	Dirt: createUvData(BlockTextures.DirtFace),
 	Sand: createUvData(BlockTextures.SandFace),
 	Gravel: createUvData(BlockTextures.GravelFace),
 	Stone: createUvData(BlockTextures.StoneFace),
+	Cobblestone: createUvData(BlockTextures.CobblestoneFace),
 	Wood: createUvData(BlockTextures.WoodSide, BlockTextures.WoodTop, BlockTextures.WoodTop)
+
 };
 
 function createUvData(side, top = side, bottom = side) {
@@ -171,6 +261,14 @@ function initGeometries() {
 	initBlock(Blocks.Gravel, geometriesFaces.gravel, uvData.Gravel);
 	initBlock(Blocks.Stone, geometriesFaces.stone, uvData.Stone);
 	initBlock(Blocks.Wood, geometriesFaces.wood, uvData.Wood);
+	initBlock(Blocks.Cobblestone, geometriesFaces.cobblestone, uvData.Cobblestone);
+	initBlock(Blocks.Bedrock, geometriesFaces.bedrock, uvData.Bedrock);
+	initBlock(Blocks.Planks, geometriesFaces.planks, uvData.Planks);
+	initBlock(Blocks.Bricks, geometriesFaces.bricks, uvData.Bricks);
+	initBlock(Blocks.StoneBricks, geometriesFaces.stoneBricks, uvData.StoneBricks);
+	initBlock(Blocks.Leaves, geometriesFaces.leaves, uvData.Leaves);
+	initBlock(Blocks.Sandstone, geometriesFaces.sandstone, uvData.Sandstone);
+	initBlock(Blocks.Glass, geometriesFaces.glass, uvData.Glass);
 
 }
 

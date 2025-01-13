@@ -20,7 +20,7 @@ export class World {
         texture.minFilter = THREE.LinearMipMapLinearFilter;	
         texture.anisotropy = 16;
 
-	    this.material = new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } );
+	    this.material = new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide, transparent: true } );
 
         for(let x = -3; x <= 3; x++)
             for(let y = -3; y <= 3; y++) {
