@@ -18,10 +18,32 @@ function setCurrentDelta(del)
 {
 	delta = del;
 }
+let sprinting = false;
+let flying = false;
 
 function setupMouseAndKeyboard(renderer)
 {
+	let lastWPress = 0;
+	let lastSpacePress = 0;
 	document.onkeydown = function (e) {
+		if (e.code === "KeyW") {
+			const now = Date.now();
+			if (now - lastWPress < 300 && now - lastWPress > 100) {
+				console.log(now - lastWPress);
+				sprinting = true;
+			}
+			lastWPress = now;
+		}
+
+		if (e.code === "Space") {
+			const now = Date.now();
+			if (now - lastSpacePress < 300 && now - lastSpacePress > 100) {
+				console.log(now - lastSpacePress);
+				flying = !flying;
+				console.log(flying);
+			}
+			lastSpacePress = now;
+		}
 		// console.log(e);
 		switch(e.code)
 		{
@@ -54,6 +76,10 @@ function setupMouseAndKeyboard(renderer)
 			case "KeyW":
 			case "KeyS":
 				keys.forward = 0;
+				if(sprinting) {
+					sprinting = false;
+					lastWPress = 0;
+				}
 				break;
 			case "KeyA":
 			case "KeyD":
@@ -157,4 +183,4 @@ function moveUp(distance) {
 	playerPositionObject.y += distance;
 }
 
-export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, worldVelocityForward, worldVelocityRight, moveUp};
+export {keys, direction, setCurrentDelta, setupMouseAndKeyboard, setPlayerPosition, setPlayerRotation, worldVelocityForward, worldVelocityRight, moveUp, sprinting, flying};

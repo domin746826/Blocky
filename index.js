@@ -26,6 +26,7 @@ slots[6] = Blocks.Planks;
 slots[7] = Blocks.StoneBricks;
 slots[8] = Blocks.Bricks;
 
+
 function updateXyz(x, y, z) {
 	document.getElementById("xyz").innerText = "XYZ: " + Math.floor(x) + "/" + Math.floor(y) + "/" + Math.floor(z);
 }
@@ -68,11 +69,14 @@ function main()
 	scene.add( helper );
 		
 	const renderer = new THREE.WebGLRenderer({
-		antialias: true // Włączenie antialiasingu
+		antialias: true, // Włączenie antialiasingu
+		alpha: true,
+		reverseDepthBuffer: true,
+		powerPreference: "high-performance"
 	  });	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
-
+	  renderer.setFace
 	window.addEventListener('resize', ()=> {
 		var newWidth = window.innerWidth;
 		var newHeight = window.innerHeight;
@@ -236,16 +240,25 @@ function main()
 		direction.set(Movement.keys.right, Movement.keys.forward, 0).normalize();
 		const smoothMovementFactor = 15;
 		const speed = Movement.keys.up == -1 ? 1 : 4.5;
+		const sprintingMultiplier = (Movement.sprinting? 1.5:0.9)* (Movement.flying? 2:1);
+		console.log(sprintingMultiplier)
+
 
 		velocity.x -= velocity.x * smoothMovementFactor * avgDelta;
 		velocity.z -= velocity.z * smoothMovementFactor * avgDelta;
-		velocity.y -= 9.81 * 0.27 * avgDelta;
+		if(!Movement.flying) { // walking
+			velocity.y -= 9.81 * 0.27 * avgDelta;
+		}
+		else { // flying
+			velocity.y -= velocity.y * smoothMovementFactor * avgDelta;
+			velocity.y += Movement.keys.up * avgDelta*10;
+		}
 
 		velocity.z += direction.y * avgDelta;
 		velocity.x += direction.x * avgDelta;
 
-		worldVelocity.x = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed).x + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * speed).x;
-		worldVelocity.z = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed).z + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * speed).z;
+		worldVelocity.x = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed*sprintingMultiplier).x + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * sprintingMultiplier*speed).x;
+		worldVelocity.z = Movement.worldVelocityForward(velocity.z * avgDelta * smoothMovementFactor * speed*sprintingMultiplier).z + Movement.worldVelocityRight(velocity.x * avgDelta * smoothMovementFactor * sprintingMultiplier*speed).z;
 	}
 
 	function handleCollisions() {

@@ -20,7 +20,13 @@ export class World {
         texture.minFilter = THREE.LinearMipMapLinearFilter;	
         texture.anisotropy = 16;
 
-	    this.material = new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide, transparent: true } );
+        const textureAlpha = new THREE.TextureLoader().load( './textures/alphamap.png' );
+        textureAlpha.colorSpace = THREE.SRGBColorSpace;
+        textureAlpha.magFilter = THREE.NearestFilter;
+        textureAlpha.minFilter = THREE.LinearMipMapLinearFilter;	
+        textureAlpha.anisotropy = 16;
+
+	    this.material = new THREE.MeshLambertMaterial( { map: texture, alphaMap: textureAlpha, transparent: true } );
 
         for(let x = -3; x <= 3; x++)
             for(let y = -3; y <= 3; y++) {
